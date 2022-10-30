@@ -17,6 +17,8 @@ cross-colcon-build() {
         --merge-install \
         --cmake-force-configure \
         --cmake-args \
+        -DPYTHON_INCLUDE_DIR=/home/develop/rootfs/usr/include/python3.9 \
+        -DPYTHON_LIBRARY=/home/develop/rootfs/usr/lib/python3.9/config-3.9-arm-linux-gnueabihf/libpython3.9.so \
         -DCMAKE_TOOLCHAIN_FILE=/home/develop/toolchain.cmake \
         -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
         -DTHIRDPARTY=ON \

@@ -18,7 +18,7 @@ sudo apt update
 # Compilation dependencies
 sudo apt install \
     liblog4cxx-dev \
-    python3-dev
+    python3.9-dev
 
 # Runtime dependencies
 sudo apt install \
@@ -49,7 +49,7 @@ As your Raspberry Pi is equipped with ROS2 dependencies you have to synchronize 
 This will allow the cross-compiler to use header files and libraries from your Raspberry Pi.
 There are two ways to get the rootfs inside your Docker.
 
-The first way, you can synchronize the content of the rootfs:
+**[NOT RECOMMENDED]** The first way, you can synchronize the content of the rootfs:
 ```bash
 rsync -rLR --safe-links pi@[raspberry_pi_ip]:/{lib,usr,opt/vc/lib} /home/develop/rootfs
 ```
@@ -81,18 +81,25 @@ export ROS_DISTRO=dashing
 To compile the ROS2 source code execute:
 ```bash
 cross-colcon-build --packages-up-to ros2topic
+cross-colcon-build --packages-up-to ros2run
+cross-colcon-build --packages-up-to ros2launch
 ```
 
 > Flag `--packages-up-to ros2topic` will compile `ros2topic` and all it's recursive dependencies.
 Also, note that it can happen that you need to run the command twice to compile `fastrtps` package.
 
+> If the compilations fails with an error about the cmake version mistmach in foo_mem-ext, edit foo_mem-ext/CMakeLists.txt and replace cmake_minimum_required(VERSION 3.11) by cmake_minimum_required(VERSION 3.10.2)
+```bash
+cd && nano ros2_ws/build/foonathan_memory_vendor/foo_mem-ext-prefix/src/foo_mem-ext/CMakeLists.txt
+```
+
 ## Using the Cross-Compiled ROS2 on your Raspberry Pi
 
-To use the cross-compiled ROS2 on your Raspberry Pi you have to copy `./ros2_ws/install` to the Raspberry Pi:
+**[RECOMMENDED]** To use the cross-compiled ROS2 on your Raspberry Pi you have to copy `./ros2_ws/install` to the Raspberry Pi:
 ```bash
-scp -r install pi@[raspberry_pi_ip]:/home/pi/ros2
+scp -r install pi@[raspberry_pi_ip]:/home/pi/ros2_ws
 ```
-> Once the `install` directory is copied you can use `source /home/pi/ros2/local_setup.bash` to set-up ROS2 on the Raspberry Pi.
+> Once the `install` directory is copied you can use `source /home/$USER/ros2_ws/install/setup.bash` to set-up ROS2 on the Raspberry Pi.
 
 Alternatively, you can mount it by running the following commands on the Raspberry Pi:
 ```bash
@@ -110,14 +117,15 @@ sudo systemctl start sshd
 
 With these tools, you can compile custom ROS2 packages as well.
 It is enough to put the source code of the package to `./ros2_ws/src` and run `cross-colcon-build` inside the Docker.
-For example, to compile the `epuck_ros2` package execute the following commands:
+For example, to compile the ` noah_firmware_py` package execute the following commands:
 
 ```bash
-git clone --recurse-submodules https://github.com/cyberbotics/epuck_ros2.git src/epuck_ros2
-cross-colcon-build --packages-up-to epuck_ros2_driver
+cd ~/ros2_ws/src
+git clone https://github.com/RoboTech-URJC/noah_firmware_py
+cross-colcon-build --packages-up-to noah_firmware_py
 ```
 
-> You can use the `--packages-select epuck_ros2_driver` flag to compile the `epuck_ros2_driver` package only.
+> You can use the `--packages-select noah_firmware_py` flag to compile the `noah_firmware_py` package only.
 
 ### Missing Dependencies
 
